@@ -1,59 +1,57 @@
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"net/http"
-	"os"
-	"time"
+    "fmt"
+    "log"
+    "os"
 
-	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
+    "github.com/joho/godotenv"
+    "go.mongodb.org/mongo-driver/mongo"
+    "go.mongodb.org/mongo-driver/mongo/options"
+    "context"
 )
 
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}
-
-func connectToMongoDB() (*mongo.Client, error) {
-	uri := os.Getenv("DATABASE_URI")
-	clientOptions := options.Client().ApplyURI(uri)
-
-	// Use mongo.Connect instead of mongo.NewClient and client.Connect
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	client, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	// Ping the database to verify connection
-	err = client.Ping(ctx, readpref.Primary())
-	if err != nil {
-		return nil, err
-	}
-
-	log.Println("Connected to MongoDB!")
-	return client, nil
-}
-
 func main() {
-	_, err := connectToMongoDB()
-	if err != nil {
-		log.Fatalf("Could not connect to MongoDB: %v", err)
-	}
+    // Load the .env file
+    err := godotenv.Load()
+    if err != nil {
+        log.Fatalf("Error loading .env file")
+    }
 
-	// Add handlers once made
-	listenAddr := flag.String("listenaddr", ":4999", "HTTP listen address")
-	flag.Parse()
+    // Get the environment variables
+    databaseURI := os.Getenv("DATABASE_URI")
+    databaseName := os.Getenv("DATABASE_NAME")
+    port := os.Getenv("PORT")
 
-	log.Printf("Server is running at http://localhost%s", *listenAddr)
-	http.ListenAndServe(*listenAddr, nil)
+    fmt.Printf("Connecting to MongoDB at URI: %s\n", databaseURI)
+    fmt.Printf("Using database: %s\n", databaseName)
+    fmt.Printf("App will run on port: %s\n", port)
+
+    // Example: Connect to MongoDB
+    clientOptions := options.Client().ApplyURI(databaseURI)
+    client, err := mongo.Connect(context.TODO(), clientOptions)
+    if err != nil {
+        log.Fatalf("Failed to connect to MongoDB: %v", err)
+    }
+
+    // Check the connection
+    err = client.Ping(context.TODO(), nil)
+    if err != nil {
+        log.Fatalf("Failed to ping MongoDB: %v", err)
+    }
+
+    fmt.Println("Connected to MongoDB!")
+
+    // Do something with the database
+    // db := client.Database(databaseName)
+
+    // Your logic here...
+
+    // Remember to disconnect from MongoDB when you're done
+    err = client.Disconnect(context.TODO())
+    if err != nil {
+        log.Fatalf("Failed to disconnect from MongoDB: %v", err)
+    }
+
+    fmt.Println("Disconnected from MongoDB")
 }
