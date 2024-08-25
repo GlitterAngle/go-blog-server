@@ -6,7 +6,6 @@ import (
 	"go-blog-server/models"
 	"net/http"
 	"sync"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -51,7 +50,7 @@ func handleGetPosts(w http.ResponseWriter, r *http.Request, db *mongo.Database){
 	collection := db.Collection("posts")
 	cur, err := collection.Find(context.TODO(), bson.M{})
 	if err != nil{
-		http.Error(w, "error fetching posts", http.StatusInternalServerError)
+		http.Error(w, "Error fetching posts", http.StatusInternalServerError)
 		return
 	}
 	defer cur.Close(context.TODO())
@@ -143,7 +142,7 @@ func handleUpdatePost(w http.ResponseWriter, r *http.Request, id string, db *mon
 
 	update := bson.M{
 		"$set": bson.M{
-			"poostBody": updatedPost.PostBody,
+			"postBody": updatedPost.PostBody,
 			"img": updatedPost.Img,
 		},
 	}
