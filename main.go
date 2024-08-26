@@ -60,7 +60,7 @@ func main() {
 		}
 	}()
 
-	// Wait for an interrupt signal to gracefully shutdown the server and disconnect from MongoDB
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
